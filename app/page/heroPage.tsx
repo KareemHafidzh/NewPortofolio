@@ -231,7 +231,7 @@ export default function HeroSection() {
             <span className="inline-block px-2 py-0.5 rounded-full bg-[#F4E11B] text-[#0135AD] text-xs sm:text-sm font-bold tracking-widest uppercase mb-1 whitespace-nowrap">
               Years Of Experience
             </span>
-            <p className="text-6xl font-bold text-[#0135AD] drop-shadow-sm">05</p>
+            <p className="text-6xl font-bold text-[#0135AD] drop-shadow-sm">02+</p>
           </div>
         </div>
       </div>
