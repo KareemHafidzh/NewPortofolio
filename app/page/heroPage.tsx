@@ -192,7 +192,7 @@ export default function HeroSection() {
           className="relative flex items-center justify-center mb-15"
           style={{ marginRight: "-140px" }}
         >
-          <Image src="/arrow/left.png" alt="Arrow left" width={300} height={300} className="object-contain" />
+          <Image src="/arrow/Left.png" alt="Arrow left" width={300} height={300} className="object-contain" />
           <div className="absolute bottom-28 -left-20 flex flex-col items-center">
             <span className="inline-block px-2 py-0.5 rounded-full bg-[#F4E11B] text-[#0135AD] text-xs sm:text-sm font-bold tracking-widest uppercase mb-1 whitespace-nowrap">
               Completed Projects
@@ -226,7 +226,7 @@ export default function HeroSection() {
           className="relative flex items-center justify-center mb-80"
           style={{ marginLeft: "-160px" }}
         >
-          <Image src="/arrow/right.png" alt="Arrow right" width={300} height={300} className="object-contain" />
+          <Image src="/arrow/Right.png" alt="Arrow right" width={300} height={300} className="object-contain" />
           <div className="absolute top-32 -right-20 flex flex-col items-center text-center">
             <span className="inline-block px-2 py-0.5 rounded-full bg-[#F4E11B] text-[#0135AD] text-xs sm:text-sm font-bold tracking-widest uppercase mb-1 whitespace-nowrap">
               Years Of Experience

@@ -49,7 +49,7 @@ export const PROJECTS: Project[] = [
     title: "First Portofolio App",
     desc: "Animation Three.js, 3D visualization, and Tailwind CSS for portofolio app.",
     tags: ["Three.js", "Tailwind CSS"],
-    wallpaper: "/Photo/Project/portofolio.png",
+    wallpaper: "/Photo/Project/Portofolio.png",
     wallpaperColor: "from-violet-300 via-purple-200 to-fuchsia-300",
     col: "3/4",
     row: "1/4",
