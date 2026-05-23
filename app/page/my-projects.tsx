@@ -3,18 +3,49 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { PROJECTS, type Project } from "../data/projects";
+import ProjectDrawer from "../components/ProjectDrawer";
 
 // ─── Palette ──────────────────────────────────────────────────────────────────
 const BLUE   = "#0135AD";
 const YELLOW = "#F4E11B";
 
+// ─── Word-limit truncation ────────────────────────────────────────────────────
+// Adjust these limits to taste for each card size.
+const WORD_LIMITS: Record<string, number> = {
+  hero:  20,  // 2×2 card — most space, but still bounded
+  thin:  12,  // thin cards don't even render desc, but defined for safety
+  small:  8,  // 1×1 — barely any room
+};
+
+/**
+ * Truncates `text` to at most `limit` words.
+ * Appends "…" only when text was actually cut.
+ */
+function truncateWords(text: string, limit: number): string {
+  const words = text.trim().split(/\s+/);
+  if (words.length <= limit) return text;
+  return words.slice(0, limit).join(" ") + "…";
+}
+
 // ─── Project Card ─────────────────────────────────────────────────────────────
-function ProjectCard({ project }: { project: Project }) {
+function ProjectCard({
+  project,
+  onClick,
+  isActive,
+}: {
+  project: Project;
+  onClick: () => void;
+  isActive: boolean;
+}) {
   const { num, title, desc, tags, wallpaper, wallpaperColor, col, row, size, year } = project;
 
   const isHero  = size === "hero";
   const isThin  = size === "thin";
   const isSmall = size === "small";
+
+  // Truncate description based on card size
+  const wordLimit  = WORD_LIMITS[size] ?? 15;
+  const shortDesc  = desc ? truncateWords(desc, wordLimit) : undefined;
 
   const tagStyle = {
     color: YELLOW,
@@ -24,10 +55,17 @@ function ProjectCard({ project }: { project: Project }) {
 
   return (
     <div
-      className="group relative overflow-hidden rounded-2xl cursor-pointer select-none"
-      style={{ gridColumn: col, gridRow: row }}
+      onClick={onClick}
+      className="group relative overflow-hidden rounded-2xl cursor-pointer select-none transition-all duration-200"
+      style={{
+        gridColumn: col,
+        gridRow: row,
+        outline: isActive ? `2.5px solid ${YELLOW}` : "2.5px solid transparent",
+        outlineOffset: "2px",
+        boxShadow: isActive ? `0 0 0 4px ${BLUE}25` : "none",
+      }}
     >
-      {/* ── Background: image or gradient ── */}
+      {/* ── Background ── */}
       {wallpaper ? (
         <Image
           src={wallpaper}
@@ -67,7 +105,7 @@ function ProjectCard({ project }: { project: Project }) {
         {year}
       </span>
 
-      {/* ── Hover arrow — yellow on hover ── */}
+      {/* ── Hover arrow ── */}
       <span
         className="absolute bottom-4 right-4 text-xs z-10 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200"
         style={{ color: YELLOW }}
@@ -101,9 +139,13 @@ function ProjectCard({ project }: { project: Project }) {
             {title}
           </h3>
 
-          {desc && !isSmall && (
-            <p className="text-[11px] font-mono text-white/60 leading-relaxed mb-2.5">
-              {desc}
+          {/* ── Truncated description (hero only; hidden on small) ── */}
+          {shortDesc && !isSmall && (
+            <p
+              className="text-[11px] font-mono text-white/60 leading-relaxed mb-2.5"
+              title={desc} // full text on hover tooltip
+            >
+              {shortDesc}
             </p>
           )}
 
@@ -127,8 +169,9 @@ function ProjectCard({ project }: { project: Project }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function ProjectGrid() {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [isDragging, setIsDragging] = useState(false);
   const dragState = useRef({ startX: 0, scrollLeft: 0 });
+  const [activeProject, setActiveProject] = useState<Project | null>(null);
 
   const onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!scrollRef.current) return;
@@ -150,65 +193,77 @@ export default function ProjectGrid() {
     scrollRef.current.scrollLeft = dragState.current.scrollLeft - walk;
   };
 
+  const handleCardClick = (project: Project) => {
+    setActiveProject((prev) => (prev?.id === project.id ? null : project));
+  };
+
   return (
-    <section className="w-full pt-25 px-6">
+    <>
+      <section className="w-full pt-25 px-6">
 
-      {/* ── Header ── */}
-      <div className="flex flex-col items-center justify-center text-center mb-10 mt-12">
-        {/* Yellow pill label */}
-        <span
-          className="inline-block px-3 py-0.5 rounded-full text-xs font-bold tracking-widest uppercase mb-4"
-          style={{ background: YELLOW, color: BLUE }}
-        >
-          Selected Work
-        </span>
+        {/* ── Header ── */}
+        <div className="flex flex-col items-center justify-center text-center mb-10 mt-12">
+          <span
+            className="inline-block px-3 py-0.5 rounded-full text-xs font-bold tracking-widest uppercase mb-4"
+            style={{ background: YELLOW, color: BLUE }}
+          >
+            Selected Work
+          </span>
 
-        {/* Title — deep blue */}
-        <h2
-          className="text-4xl md:text-5xl font-bold tracking-tight mb-3"
-          style={{ color: BLUE }}
-        >
-          Featured Projects
-        </h2>
+          <h2
+            className="text-4xl md:text-5xl font-bold tracking-tight mb-3"
+            style={{ color: BLUE }}
+          >
+            Featured Projects
+          </h2>
 
-        {/* Yellow underline accent */}
-        <div className="mb-3 h-[3px] w-16 rounded-full" style={{ background: YELLOW }} />
+          <div className="mb-3 h-[3px] w-16 rounded-full" style={{ background: YELLOW }} />
 
-        {/* Subtitle */}
-        <p
-          className="text-xs sm:text-sm tracking-widest uppercase font-mono"
-          style={{ color: `${BLUE}60` }}
-        >
-          2024 — 2026 <span className="mx-2 opacity-50">|</span> scroll to explore →
-        </p>
-      </div>
-
-      {/* ── Scrollable wrapper ── */}
-      <div
-        ref={scrollRef}
-        className="overflow-x-auto pb-3 -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        style={{
-          cursor: isDragging ? "grabbing" : "grab",
-          WebkitOverflowScrolling: "touch",
-        }}
-        onMouseDown={onMouseDown}
-        onMouseLeave={onMouseLeave}
-        onMouseUp={onMouseUp}
-        onMouseMove={onMouseMove}
-      >
-        <div
-          className="grid gap-2"
-          style={{
-            gridTemplateRows: "repeat(3, 220px)",
-            gridAutoColumns: "240px",
-            width: "max-content",
-          }}
-        >
-          {PROJECTS.map((project) => (
-            <ProjectCard key={project.id} project={project} />
-          ))}
+          <p
+            className="text-xs sm:text-sm tracking-widest uppercase font-mono"
+            style={{ color: `${BLUE}60` }}
+          >
+            2024 — 2026 <span className="mx-2 opacity-50">|</span> scroll to explore →
+          </p>
         </div>
-      </div>
-    </section>
+
+        {/* ── Scrollable grid ── */}
+        <div
+          ref={scrollRef}
+          className="overflow-x-auto pb-3 -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          style={{
+            cursor: isDragging ? "grabbing" : "grab",
+            WebkitOverflowScrolling: "touch",
+          }}
+          onMouseDown={onMouseDown}
+          onMouseLeave={onMouseLeave}
+          onMouseUp={onMouseUp}
+          onMouseMove={onMouseMove}
+        >
+          <div
+            className="grid gap-2"
+            style={{
+              gridTemplateRows: "repeat(3, 220px)",
+              gridAutoColumns: "240px",
+              width: "max-content",
+            }}
+          >
+            {PROJECTS.map((project) => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                onClick={() => handleCardClick(project)}
+                isActive={activeProject?.id === project.id}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <ProjectDrawer
+        project={activeProject}
+        onClose={() => setActiveProject(null)}
+      />
+    </>
   );
 }
