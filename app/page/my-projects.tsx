@@ -241,12 +241,7 @@ export default function ProjectGrid() {
           onMouseMove={onMouseMove}
         >
           <div
-            className="grid gap-2"
-            style={{
-              gridTemplateRows: "repeat(3, 220px)",
-              gridAutoColumns: "240px",
-              width: "max-content",
-            }}
+            className="grid gap-2 auto-cols-[180px] md:auto-cols-[240px] grid-rows-[repeat(3,160px)] md:grid-rows-[repeat(3,220px)] w-max"
           >
             {PROJECTS.map((project) => (
               <ProjectCard

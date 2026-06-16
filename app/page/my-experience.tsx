@@ -128,7 +128,7 @@ export default function ExperienceSection() {
             <div className="mb-5 h-[3px] w-16 rounded-full" style={{ background: YELLOW }} />
 
             {/* Description */}
-            <div className="h-[96px] md:h-[120px]">
+            <div className="min-h-[140px] md:h-[120px] mb-6 md:mb-0">
               <p
                 key={`desc-${active}`}
                 className="reveal text-sm sm:text-base leading-relaxed"
@@ -181,16 +181,8 @@ export default function ExperienceSection() {
 
         {/* ── Cards row ── */}
         <div
-          className="hide-scrollbar"
+          className="hide-scrollbar flex items-end overflow-x-auto overflow-y-hidden snap-x snap-mandatory pb-10 md:pb-20 gap-5 md:gap-7 min-h-[520px] md:min-h-[650px]"
           style={{
-            display: "flex",
-            gap: "28px",
-            alignItems: "flex-end",
-            minHeight: "650px",
-            paddingBottom: "80px",
-            overflowX: "auto",
-            overflowY: "hidden",
-            scrollSnapType: "x mandatory",
             WebkitOverflowScrolling: "touch",
             scrollBehavior: "smooth",
           }}
@@ -208,8 +200,8 @@ export default function ExperienceSection() {
                   position: "relative",
                   flex: "0 0 auto",
                   flexShrink: 0,
-                  width: isActive ? "390px" : "290px",
-                  height: isActive ? "530px" : "450px",
+                  width: isActive ? "min(75vw, 390px)" : "min(60vw, 290px)",
+                  height: isActive ? "min(65vh, 530px)" : "min(55vh, 450px)",
                   cursor: "pointer",
                   opacity: i < active ? 0.55 : 1,
                   transition: "width 0.5s cubic-bezier(0.4,0,0.2,1), height 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease",
