@@ -22,21 +22,25 @@ function useIsMobile() {
   return isMobile;
 }
 
-// ─── Hero image block ─────────────────────────────────────────────────────────
+// ─── Media item: either a screenshot or a demo clip ──────────────────────────
+type MediaItem = { type: "image" | "video"; src: string };
+
+// ─── Hero media block ──────────────────────────────────────────────────────────
 // Portrait screenshots (phone apps) → object-contain + blurred gradient bg
-// Landscape images (web/dashboard)  → object-cover  + 16:9 crop
+// Landscape images/videos (web/dashboard) → object-cover + 16:9 crop
 function HeroImage({
   project,
   activeImg,
-  images,
+  media,
   isMobile,
 }: {
   project: Project;
   activeImg: number;
-  images: string[];
+  media: MediaItem[];
   isMobile: boolean;
 }) {
   const isPortrait = project.imageOrientation === "portrait";
+  const active = media[activeImg];
 
   return (
     <div
@@ -49,9 +53,9 @@ function HeroImage({
       }}
     >
       {/* ── Blurred background fill (portrait only) ── */}
-      {isPortrait && images.length > 0 && (
+      {isPortrait && active?.type === "image" && (
         <Image
-          src={images[activeImg]}
+          src={active.src}
           alt=""
           fill
           aria-hidden
@@ -60,13 +64,25 @@ function HeroImage({
         />
       )}
 
-      {/* ── Gradient fallback when no image ── */}
-      {images.length === 0 && (
+      {/* ── Gradient fallback when no media ── */}
+      {media.length === 0 && (
         <div className={`absolute inset-0 bg-gradient-to-br ${project.wallpaperColor}`} />
       )}
 
+      {/* ── Main video ── */}
+      {active?.type === "video" && (
+        <video
+          key={active.src}
+          src={active.src}
+          controls
+          playsInline
+          preload="metadata"
+          className="relative z-10 w-full h-full object-contain"
+        />
+      )}
+
       {/* ── Main image ── */}
-      {images.length > 0 && (
+      {active?.type === "image" && (
         <div
           className="relative z-10 transition-opacity duration-300"
           style={
@@ -83,7 +99,7 @@ function HeroImage({
           }
         >
           <Image
-            src={images[activeImg]}
+            src={active.src}
             alt={project.title}
             fill={!isPortrait}
             {...(isPortrait
@@ -140,14 +156,14 @@ function DrawerContent({
   onClose,
   activeImg,
   setActiveImg,
-  images,
+  media,
   isMobile,
 }: {
   project: Project;
   onClose: () => void;
   activeImg: number;
   setActiveImg: (i: number) => void;
-  images: string[];
+  media: MediaItem[];
   isMobile: boolean;
 }) {
   return (
@@ -155,7 +171,7 @@ function DrawerContent({
       className="flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       style={{ maxHeight: isMobile ? "85vh" : "100vh" }}
     >
-      {/* ── Hero image ── */}
+      {/* ── Hero media ── */}
       <div className="relative" onClick={(e) => {
         // forward close-btn clicks
         if ((e.target as HTMLElement).closest("#drawer-close-btn")) onClose();
@@ -163,15 +179,15 @@ function DrawerContent({
         <HeroImage
           project={project}
           activeImg={activeImg}
-          images={images}
+          media={media}
           isMobile={isMobile}
         />
       </div>
 
       {/* ── Thumbnail strip ── */}
-      {images.length > 1 && (
+      {media.length > 1 && (
         <div className="flex gap-2 px-5 py-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {images.map((src, i) => (
+          {media.map((item, i) => (
             <button
               key={i}
               onClick={() => setActiveImg(i)}
@@ -186,13 +202,17 @@ function DrawerContent({
                 opacity: i === activeImg ? 1 : 0.5,
               }}
             >
-              <Image
-                src={src}
-                alt={`Screenshot ${i + 1}`}
-                fill
-                className="object-cover"
-                sizes="72px"
-              />
+              {item.type === "video" ? (
+                <video src={item.src} muted preload="metadata" className="absolute inset-0 w-full h-full object-cover" />
+              ) : (
+                <Image
+                  src={item.src}
+                  alt={`Screenshot ${i + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="72px"
+                />
+              )}
             </button>
           ))}
         </div>
@@ -304,10 +324,12 @@ export default function ProjectDrawer({ project, onClose }: ProjectDrawerProps) 
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
-  const images = project?.images?.length
-    ? project.images
+  const media: MediaItem[] = project?.videos?.length
+    ? project.videos.map((src) => ({ type: "video" as const, src }))
+    : project?.images?.length
+    ? project.images.map((src) => ({ type: "image" as const, src }))
     : project?.wallpaper
-    ? [project.wallpaper]
+    ? [{ type: "image" as const, src: project.wallpaper }]
     : [];
 
   // ── Mobile: centered modal ────────────────────────────────────────────────
@@ -349,7 +371,7 @@ export default function ProjectDrawer({ project, onClose }: ProjectDrawerProps) 
               onClose={onClose}
               activeImg={activeImg}
               setActiveImg={setActiveImg}
-              images={images}
+              media={media}
               isMobile
             />
           )}
@@ -377,7 +399,7 @@ export default function ProjectDrawer({ project, onClose }: ProjectDrawerProps) 
             onClose={onClose}
             activeImg={activeImg}
             setActiveImg={setActiveImg}
-            images={images}
+            media={media}
             isMobile={false}
           />
         )}

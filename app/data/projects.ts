@@ -30,6 +30,7 @@ export interface Project {
   year: string;
   githubUrl?: string;
   images?: string[];
+  videos?: string[];
   imageOrientation?: ImageOrientation;
 }
 
@@ -44,8 +45,8 @@ export const PROJECTS: Project[] = [
     tags: ["Swift", "UIKit", "Supabase", "MVVM"],
     wallpaper: "/Photo/Project/ToDoList/ToDoList.png",
     wallpaperColor: "from-amber-200 via-orange-300 to-yellow-200",
-    col: "1/3",   // ← was 8/10
-    row: "1/2",
+    col: "3/5",   // ← was 1/3
+    row: "1/3",
     size: "hero",
     year: "2025",
     githubUrl: "https://github.com/yourusername/ToDoList",
@@ -65,8 +66,8 @@ export const PROJECTS: Project[] = [
     tags: ["Swift", "SwiftUI", "Node.JS", "Supabase", "Role Based User", "MVVM"],
     wallpaper: "/Photo/Project/Kojek/KojekApp.png",
     wallpaperColor: "from-amber-200 via-orange-300 to-yellow-200",
-    col: "1/3",   // ← was 8/10
-    row: "2/4",
+    col: "3/5",   // ← was 1/3
+    row: "3/7",
     size: "hero",
     year: "2026",
     githubUrl: "https://github.com/yourusername/tipsy",
@@ -92,8 +93,8 @@ export const PROJECTS: Project[] = [
     tags: ["Swift", "Firebase", "MVVM", "SwiftUI"],
     wallpaper: "/Photo/Project/kchat.png",
     wallpaperColor: "from-orange-300 via-red-200 to-rose-300",
-    col: "3/5",   // ← was 1/3
-    row: "1/3",
+    col: "5/7",   // ← was 3/5
+    row: "1/5",
     size: "hero",
     year: "2025",
     githubUrl: "https://github.com/yourusername/kchat",
@@ -108,8 +109,8 @@ export const PROJECTS: Project[] = [
     tags: ["Swift", "Firebase", "MVVM", "Multi-User", "SwiftUI"],
     wallpaper: "/Photo/Project/kshop.jpg",
     wallpaperColor: "from-emerald-300 via-teal-200 to-cyan-300",
-    col: "3/5",   // ← was 1/3
-    row: "3/4",   // ← was 3/3 (typo fixed)
+    col: "5/7",   // ← was 3/5
+    row: "5/7",   // ← was 3/3 (typo fixed)
     size: "hero",
     year: "2025",
     githubUrl: "https://github.com/yourusername/kshop",
@@ -126,8 +127,8 @@ export const PROJECTS: Project[] = [
     tags: ["Three.js", "Tailwind CSS"],
     wallpaper: "/Photo/Project/Portofolio.png",
     wallpaperColor: "from-violet-300 via-purple-200 to-fuchsia-300",
-    col: "5/6",   // ← was 3/4
-    row: "1/4",
+    col: "7/8",   // ← was 5/6
+    row: "1/7",
     size: "med",
     year: "2025",
     githubUrl: "https://github.com/yourusername/portfolio",
@@ -144,8 +145,8 @@ export const PROJECTS: Project[] = [
     tags: ["API", "Swift", "MVVM", "SwiftUI"],
     wallpaper: "/Photo/Project/hackernews.png",
     wallpaperColor: "from-blue-300 via-sky-200 to-indigo-300",
-    col: "6/8",   // ← was 4/6
-    row: "1/2",
+    col: "8/10",  // ← was 6/8
+    row: "1/3",
     size: "med",
     year: "2025",
     githubUrl: "https://github.com/yourusername/hackernews",
@@ -160,8 +161,8 @@ export const PROJECTS: Project[] = [
     tags: ["API", "Swift", "MVVM", "UIkit"],
     wallpaper: "/Photo/Project/weatherApp.jpg",
     wallpaperColor: "from-rose-300 via-pink-200 to-fuchsia-300",
-    col: "6/8",   // ← was 4/6
-    row: "2/3",
+    col: "8/10",  // ← was 6/8
+    row: "3/5",
     size: "med",
     year: "2025",
     githubUrl: "https://github.com/yourusername/weather-app",
@@ -176,8 +177,8 @@ export const PROJECTS: Project[] = [
     tags: ["React", "NextJS", "Tailwind CSS", "Vector Tiles", "MapLibre GL JS", "Machine Learning Integration", "Geoman"],
     wallpaper: "/Photo/Project/geodashboard.jpg",
     wallpaperColor: "from-amber-300 via-yellow-200 to-orange-300",
-    col: "6/8",   // ← was 4/6
-    row: "3/4",
+    col: "8/10",  // ← was 6/8
+    row: "5/7",
     size: "med",
     year: "2026",
     githubUrl: "https://github.com/yourusername/geodashboard",
@@ -194,8 +195,8 @@ export const PROJECTS: Project[] = [
     tags: ["React", "NextJS", "Tailwind CSS", "Branding"],
     wallpaper: "/Photo/Project/jivasport.png",
     wallpaperColor: "from-amber-200 via-orange-300 to-yellow-200",
-    col: "8/9",   // ← was 6/7
-    row: "1/3",
+    col: "10/11", // ← was 8/9
+    row: "1/5",
     size: "hero",
     year: "2026",
     githubUrl: "https://github.com/yourusername/jivasport",
@@ -210,8 +211,8 @@ export const PROJECTS: Project[] = [
     tags: ["Swift", "UIKit"],
     wallpaper: "/Photo/Project/bytecoin.png",
     wallpaperColor: "from-amber-200 via-orange-300 to-yellow-200",
-    col: "8/10",  // ← was 6/8
-    row: "3/4",
+    col: "10/12", // ← was 8/10
+    row: "5/7",
     size: "hero",
     year: "2025",
     githubUrl: "https://github.com/yourusername/bytecoin",
@@ -226,12 +227,51 @@ export const PROJECTS: Project[] = [
     tags: ["Swift", "UIKit"],
     wallpaper: "/Photo/Project/tipsy.png",
     wallpaperColor: "from-amber-200 via-orange-300 to-yellow-200",
-    col: "9/10",
-    row: "1/3",
+    col: "11/12", // ← was 9/10
+    row: "1/5",
     size: "hero",
     year: "2025",
     githubUrl: "https://github.com/yourusername/tipsy",
     images: ["/Photo/Project/tipsy.png"],
     imageOrientation: "portrait",
+  },
+  
+  // ── cols 10–11 (New split cards) ────────────────────────────────────────────
+  {
+    id: 12,
+    num: "12",
+    title: "PairingMacTab",
+    desc: "Turns an Android tablet into a wired extended display for macOS over USB — no Apple hardware required. The Mac creates a virtual second monitor, captures it in real-time, encodes it as H.264 via VideoToolbox, and streams it over USB (Android Open Accessory protocol). The tablet decodes it in hardware with MediaCodec, and touch/keyboard input flows back to the Mac.",
+    tags: ["Swift", "Kotlin", "Jetpack Compose", "ScreenCaptureKit", "IOKit", "MVVM"],
+    wallpaper: null,
+    wallpaperColor: "from-blue-300 via-sky-200 to-indigo-300",
+    col: "1/3",   // ← was 10/12
+    row: "1/4",
+    size: "hero",
+    year: "2026",
+    githubUrl: "https://github.com/KareemHafidzh/PairingMacTab",
+    images: [],
+    videos: ["/Photo/Project/PairMacTab/pairmactab-demo.mp4"],
+    imageOrientation: "landscape",
+  },
+  {
+    id: 13,
+    num: "13",
+    title: "VibeCode Web Builder",
+    desc: "A native macOS AI app builder powered by the Gemini API — generate, manage, and iterate on web app code from a chat interface, with a visual project canvas and file tree. API keys never touch the codebase; they're encrypted straight into the macOS Keychain.",
+    tags: ["Swift", "SwiftUI", "Gemini API", "Keychain", "macOS"],
+    wallpaper: null,
+    wallpaperColor: "from-rose-300 via-pink-200 to-fuchsia-300",
+    col: "1/3",   // ← was 10/12
+    row: "4/7",
+    size: "hero",
+    year: "2026",
+    githubUrl: "https://github.com/KareemHafidzh/VibeCodeWeb",
+    images: [],
+    videos: [
+      "/Photo/Project/VibeCode/vibecode-demo-1.mp4",
+      "/Photo/Project/VibeCode/vibecode-demo-2.mp4",
+    ],
+    imageOrientation: "landscape",
   },
 ];

@@ -37,7 +37,7 @@ function ProjectCard({
   onClick: () => void;
   isActive: boolean;
 }) {
-  const { num, title, desc, tags, wallpaper, wallpaperColor, col, row, size, year } = project;
+  const { num, title, desc, tags, wallpaper, wallpaperColor, videos, col, row, size, year } = project;
 
   const isHero  = size === "hero";
   const isThin  = size === "thin";
@@ -66,7 +66,17 @@ function ProjectCard({
       }}
     >
       {/* ── Background ── */}
-      {wallpaper ? (
+      {videos?.length ? (
+        <video
+          src={videos[0]}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+      ) : wallpaper ? (
         <Image
           src={wallpaper}
           alt={title}
@@ -241,7 +251,7 @@ export default function ProjectGrid() {
           onMouseMove={onMouseMove}
         >
           <div
-            className="grid gap-2 auto-cols-[180px] md:auto-cols-[240px] grid-rows-[repeat(3,160px)] md:grid-rows-[repeat(3,220px)] w-max"
+            className="grid gap-2 auto-cols-[180px] md:auto-cols-[240px] grid-rows-[repeat(6,76px)] md:grid-rows-[repeat(6,106px)] w-max"
           >
             {PROJECTS.map((project) => (
               <ProjectCard

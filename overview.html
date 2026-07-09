@@ -1,0 +1,269 @@
+<title>Kareem Hafidzh — Portfolio App Overview</title>
+<style>
+  :root {
+    --blue: #0135AD;
+    --blue-600: #0a48d6;
+    --yellow: #F4E11B;
+    --ground: #f6f7fb;
+    --card: #ffffff;
+    --ink: #0c1a3d;
+    --muted: #5566896b;
+    --muted-text: #4a5a86;
+    --line: #0135ad1f;
+    --shadow: 0 18px 40px -22px rgba(1,53,173,.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #070b1c;
+      --card: #0e152e;
+      --ink: #eaf0ff;
+      --muted-text: #9db0dd;
+      --line: #ffffff1a;
+      --blue: #6f9bff;
+      --shadow: 0 18px 44px -20px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="light"] {
+    --ground: #f6f7fb; --card: #fff; --ink: #0c1a3d; --muted-text: #4a5a86;
+    --line: #0135ad1f; --blue: #0135AD; --shadow: 0 18px 40px -22px rgba(1,53,173,.45);
+  }
+  :root[data-theme="dark"] {
+    --ground: #070b1c; --card: #0e152e; --ink: #eaf0ff; --muted-text: #9db0dd;
+    --line: #ffffff1a; --blue: #6f9bff; --shadow: 0 18px 44px -20px rgba(0,0,0,.7);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  h1, h2, h3 { text-wrap: balance; letter-spacing: -0.02em; line-height: 1.08; }
+
+  .eyebrow {
+    display: inline-block; font-size: 11px; font-weight: 800;
+    letter-spacing: .18em; text-transform: uppercase;
+    color: var(--blue); background: var(--yellow);
+    padding: 4px 12px; border-radius: 999px;
+  }
+
+  /* ── Hero ── */
+  header { padding: 68px 0 48px; position: relative; overflow: hidden; }
+  header::before {
+    content: ""; position: absolute; inset: 0;
+    background:
+      radial-gradient(60% 90% at 85% -10%, var(--yellow) 0%, transparent 45%),
+      radial-gradient(50% 80% at 0% 110%, color-mix(in srgb, var(--blue) 40%, transparent) 0%, transparent 55%);
+    opacity: .16; pointer-events: none;
+  }
+  .hero-name {
+    font-size: clamp(2.6rem, 7vw, 5rem); font-weight: 900; margin: 18px 0 0;
+    color: var(--blue);
+  }
+  .hero-name .dot { color: var(--yellow); -webkit-text-stroke: 1px var(--blue); }
+  .roles { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .role {
+    font-size: 13px; font-weight: 700; color: var(--blue);
+    border: 1px solid var(--yellow); background: color-mix(in srgb, var(--yellow) 22%, transparent);
+    padding: 5px 12px; border-radius: 999px;
+  }
+  .lede { margin-top: 22px; max-width: 60ch; font-size: 17px; color: var(--muted-text); }
+
+  /* ── Stats ── */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 36px; }
+  .stat {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 18px 16px; box-shadow: var(--shadow);
+  }
+  .stat b {
+    display: block; font-size: clamp(1.7rem, 4vw, 2.4rem); font-weight: 900;
+    color: var(--blue); line-height: 1; font-variant-numeric: tabular-nums;
+  }
+  .stat span { display: block; margin-top: 8px; font-size: 11px; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--muted-text); }
+
+  /* ── Sections ── */
+  section { padding: 56px 0; border-top: 1px solid var(--line); }
+  .sec-head h2 { font-size: clamp(1.6rem, 4vw, 2.3rem); font-weight: 800; margin: 12px 0 0; color: var(--ink); }
+  .sec-head p { color: var(--muted-text); margin: 10px 0 0; max-width: 56ch; }
+  .rule { width: 52px; height: 3px; background: var(--yellow); border-radius: 3px; margin-top: 16px; }
+
+  /* ── Tech ── */
+  .tech { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
+  .tech span {
+    font-size: 13px; font-weight: 700; color: var(--ink);
+    background: var(--card); border: 1px solid var(--line);
+    padding: 8px 14px; border-radius: 10px; transition: transform .15s, border-color .15s;
+  }
+  .tech span:hover { transform: translateY(-2px); border-color: var(--yellow); }
+
+  /* ── Projects ── */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-top: 30px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 20px; display: flex; flex-direction: column; gap: 10px;
+    box-shadow: var(--shadow); transition: transform .18s, border-color .18s;
+  }
+  .card:hover { transform: translateY(-4px); border-color: var(--yellow); }
+  .card .top { display: flex; justify-content: space-between; align-items: baseline; }
+  .card .num { font-size: 12px; font-weight: 900; color: var(--yellow);
+    -webkit-text-stroke: .5px var(--blue); font-variant-numeric: tabular-nums; }
+  .card .yr { font-size: 12px; font-weight: 700; color: var(--muted-text); }
+  .card h3 { font-size: 18px; font-weight: 800; color: var(--blue); margin: 0; }
+  .card p { font-size: 13.5px; color: var(--muted-text); margin: 0; flex: 1; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-size: 11px; font-weight: 700; color: var(--blue);
+    background: color-mix(in srgb, var(--yellow) 30%, transparent); padding: 3px 9px; border-radius: 999px; }
+
+  /* ── Experience ── */
+  .xp { display: flex; flex-direction: column; gap: 0; margin-top: 30px; }
+  .xp-item {
+    display: grid; grid-template-columns: 130px 1fr; gap: 24px;
+    padding: 24px 0; border-top: 1px solid var(--line);
+  }
+  .xp-item:first-child { border-top: none; }
+  .xp-when { font-size: 13px; font-weight: 700; color: var(--blue); }
+  .xp-when small { display: block; font-weight: 600; color: var(--muted-text); margin-top: 4px; font-size: 12px; }
+  .xp-body h3 { font-size: 18px; font-weight: 800; margin: 0; color: var(--ink); }
+  .xp-body .role-tag { font-size: 13px; font-weight: 700; color: var(--blue); margin: 4px 0 10px; }
+  .xp-body p { font-size: 14px; color: var(--muted-text); margin: 0 0 12px; }
+
+  /* ── Stack note ── */
+  .built { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+  .built div {
+    flex: 1; min-width: 160px; background: var(--card); border: 1px solid var(--line);
+    border-radius: 14px; padding: 16px 18px;
+  }
+  .built b { color: var(--blue); font-size: 15px; }
+  .built span { display: block; color: var(--muted-text); font-size: 13px; margin-top: 4px; }
+
+  footer { padding: 44px 0 60px; border-top: 1px solid var(--line); color: var(--muted-text); font-size: 13px; }
+  footer a { color: var(--blue); font-weight: 700; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 640px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .xp-item { grid-template-columns: 1fr; gap: 8px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">Portfolio Web App · Next.js 16 + React 19</span>
+    <h1 class="hero-name">Kareem Abdul Hafidzh<span class="dot">.</span></h1>
+    <div class="roles">
+      <span class="role">Software Engineer</span>
+      <span class="role">iOS Developer</span>
+      <span class="role">Fullstack Developer</span>
+      <span class="role">Web Developer</span>
+    </div>
+    <p class="lede">
+      A personal portfolio app architecting high-performance web applications and native
+      mobile experiences — bridging complex logic with intuitive design. Built with an
+      animated typing hero, a bento-grid project showcase, and an interactive experience timeline.
+    </p>
+
+    <div class="stats">
+      <div class="stat"><b>11</b><span>Projects Showcased</span></div>
+      <div class="stat"><b>02+</b><span>Years Experience</span></div>
+      <div class="stat"><b>16</b><span>Skills &amp; Tools</span></div>
+      <div class="stat"><b>04</b><span>Roles Held</span></div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap sec-head">
+    <span class="eyebrow">Tech Stack</span>
+    <h2>Working with the latest technologies</h2>
+    <div class="rule"></div>
+    <div class="tech">
+      <span>React</span><span>Next.js</span><span>Swift</span><span>SwiftUI</span>
+      <span>UIKit</span><span>C#</span><span>.NET</span><span>Python</span>
+      <span>Java</span><span>JavaScript</span><span>C</span><span>Tailwind CSS</span>
+      <span>Bootstrap</span><span>Firebase</span><span>Supabase</span><span>MySQL</span>
+      <span>REST API</span><span>Three.js</span><span>Git</span><span>MVVM</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap sec-head">
+    <span class="eyebrow">Selected Work</span>
+    <h2>Projects in the showcase</h2>
+    <p>A bento-grid gallery of 11 shipped projects — mobile-first iOS apps, real-time data tools, and web builds.</p>
+    <div class="grid">
+      <div class="card"><div class="top"><span class="num">11</span><span class="yr">2025</span></div><h3>To Do List App</h3><p>Task manager in Swift &amp; UIKit with an in-app calendar picker and date-scoped tasks.</p><div class="chips"><span class="chip">Swift</span><span class="chip">UIKit</span><span class="chip">Supabase</span><span class="chip">MVVM</span></div></div>
+      <div class="card"><div class="top"><span class="num">10</span><span class="yr">2026</span></div><h3>Kojek App</h3><p>Ride-hailing app with route optimization, dynamic pricing, and driver online/offline status.</p><div class="chips"><span class="chip">SwiftUI</span><span class="chip">Node.js</span><span class="chip">Supabase</span><span class="chip">Role-Based</span></div></div>
+      <div class="card"><div class="top"><span class="num">01</span><span class="yr">2025</span></div><h3>KChat App</h3><p>Real-time iOS chat between users, built with SwiftUI and Firebase.</p><div class="chips"><span class="chip">Swift</span><span class="chip">Firebase</span><span class="chip">SwiftUI</span></div></div>
+      <div class="card"><div class="top"><span class="num">02</span><span class="yr">2025</span></div><h3>Kshop Ecommerce</h3><p>Online store with multi-user support, built in Swift &amp; Firebase on MVVM.</p><div class="chips"><span class="chip">Swift</span><span class="chip">Firebase</span><span class="chip">Multi-User</span></div></div>
+      <div class="card"><div class="top"><span class="num">03</span><span class="yr">2025</span></div><h3>First Portfolio App</h3><p>3D-animated portfolio built with Three.js and Tailwind CSS.</p><div class="chips"><span class="chip">Three.js</span><span class="chip">Tailwind CSS</span></div></div>
+      <div class="card"><div class="top"><span class="num">04</span><span class="yr">2025</span></div><h3>Hacker News App</h3><p>SwiftUI client fetching live stories from the official Hacker News API.</p><div class="chips"><span class="chip">API</span><span class="chip">Swift</span><span class="chip">SwiftUI</span></div></div>
+      <div class="card"><div class="top"><span class="num">05</span><span class="yr">2025</span></div><h3>Weather App</h3><p>SwiftUI weather client pulling live conditions from a weather API.</p><div class="chips"><span class="chip">API</span><span class="chip">Swift</span><span class="chip">UIKit</span></div></div>
+      <div class="card"><div class="top"><span class="num">06</span><span class="yr">2026</span></div><h3>Geodashboard</h3><p>Interactive geospatial dashboard on MapLibre GL JS with vector tiles and ML integration.</p><div class="chips"><span class="chip">Next.js</span><span class="chip">MapLibre GL</span><span class="chip">ML</span></div></div>
+      <div class="card"><div class="top"><span class="num">07</span><span class="yr">2026</span></div><h3>JivaSport Brand Identity</h3><p>First client project — full brand identity, typography, and a vibrant palette.</p><div class="chips"><span class="chip">Next.js</span><span class="chip">Tailwind CSS</span><span class="chip">Branding</span></div></div>
+      <div class="card"><div class="top"><span class="num">08</span><span class="yr">2025</span></div><h3>ByteCoin Realtime</h3><p>Real-time cryptocurrency price tracker in Swift &amp; UIKit.</p><div class="chips"><span class="chip">Swift</span><span class="chip">UIKit</span></div></div>
+      <div class="card"><div class="top"><span class="num">09</span><span class="yr">2025</span></div><h3>Tipsy App</h3><p>Split-the-bill app with tax percentages, built in Swift &amp; Firebase on MVVM.</p><div class="chips"><span class="chip">Swift</span><span class="chip">UIKit</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap sec-head">
+    <span class="eyebrow">Professional Journey</span>
+    <h2>My experience</h2>
+    <div class="xp">
+      <div class="xp-item">
+        <div class="xp-when">Feb 2026 — Present<small>QPRO Sukses Mandiri</small></div>
+        <div class="xp-body"><h3>Application Developer</h3><div class="role-tag">Web application features · MVC</div>
+        <p>Built and maintained responsive web features on Bootstrap + MVC, backend CRUD APIs, and business logic in JavaScript and C#, focused on scalable, clean-code systems.</p>
+        <div class="chips"><span class="chip">C#</span><span class="chip">.NET</span><span class="chip">REST API</span><span class="chip">SQL</span><span class="chip">Bootstrap</span></div></div>
+      </div>
+      <div class="xp-item">
+        <div class="xp-when">Sept 2024 — Dec 2025<small>Binus University</small></div>
+        <div class="xp-body"><h3>Assistant Laboratory</h3><div class="role-tag">Mentoring · Python &amp; C algorithms</div>
+        <p>Mentored students through programming and software-development concepts across Python algorithms, databases, and C — strengthening leadership and technical-guidance skills.</p>
+        <div class="chips"><span class="chip">Python</span><span class="chip">Database</span><span class="chip">C</span><span class="chip">Leadership</span></div></div>
+      </div>
+      <div class="xp-item">
+        <div class="xp-when">Feb 2025 — Dec 2025<small>BURNCUP</small></div>
+        <div class="xp-body"><h3>Vice Project Manager</h3><div class="role-tag">Event planning · Team coordination</div>
+        <p>Coordinated planning and cross-division collaboration for one of BINUS Bekasi's major student events, managing workflows and timely delivery.</p>
+        <div class="chips"><span class="chip">Management</span><span class="chip">Teamwork</span><span class="chip">Communication</span></div></div>
+      </div>
+      <div class="xp-item">
+        <div class="xp-when">Dec 2021 — Aug 2022<small>Visecoach</small></div>
+        <div class="xp-body"><h3>iOS Developer &amp; UI/UX Designer</h3><div class="role-tag">UIKit · Figma · MVVM</div>
+        <p>Designed and built iOS interfaces in UIKit &amp; Swift with user-centered UI/UX in Figma, following MVVM for responsive mobile experiences.</p>
+        <div class="chips"><span class="chip">Swift</span><span class="chip">UIKit</span><span class="chip">Figma</span><span class="chip">UI/UX</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap sec-head">
+    <span class="eyebrow">Under the Hood</span>
+    <h2>How this app is built</h2>
+    <div class="built">
+      <div><b>Next.js 16 · React 19</b><span>App Router with responsive mobile / tablet / desktop hero layouts.</span></div>
+      <div><b>Framer Motion</b><span>Project drawer, animated logo, and reveal transitions.</span></div>
+      <div><b>Tailwind CSS v4</b><span>Brand system in blue #0135AD &amp; yellow #F4E11B.</span></div>
+      <div><b>TypeScript</b><span>Typed project data, card sizing, and image orientation.</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Kareem Abdul Hafidzh · Software Engineer &amp; iOS Developer ·
+    <a href="https://linkedin.com/in/kareem-hafidzh-34303421b">LinkedIn</a> ·
+    <a href="https://instagram.com/kareem_hafidzh">Instagram</a>
+    &nbsp;— &ldquo;Tell me what can't be built with code.&rdquo;
+  </div>
+</footer>
