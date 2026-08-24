@@ -145,9 +145,61 @@
   footer a { color: var(--blue); font-weight: 700; text-decoration: none; }
   footer a:hover { text-decoration: underline; }
 
+  /* ── Roadmap ── */
+  :root {
+    --sev-critical: #d64545;
+    --sev-critical-bg: #d6454517;
+    --sev-add: #2f8f6f;
+    --sev-add-bg: #2f8f6f17;
+    --sev-nice: #7a6bd6;
+    --sev-nice-bg: #7a6bd617;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --sev-critical: #ff8080; --sev-add: #6fd6ae; --sev-nice: #b3a4ff; }
+  }
+  :root[data-theme="dark"] { --sev-critical: #ff8080; --sev-add: #6fd6ae; --sev-nice: #b3a4ff; }
+  :root[data-theme="light"] { --sev-critical: #d64545; --sev-add: #2f8f6f; --sev-nice: #7a6bd6; }
+
+  .roadmap-group { margin-top: 40px; }
+  .roadmap-group:first-child { margin-top: 30px; }
+  .roadmap-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .sev-pill {
+    font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+    padding: 4px 11px; border-radius: 999px; white-space: nowrap;
+  }
+  .sev-pill.critical { color: var(--sev-critical); background: var(--sev-critical-bg); }
+  .sev-pill.add      { color: var(--sev-add);      background: var(--sev-add-bg); }
+  .sev-pill.nice     { color: var(--sev-nice);      background: var(--sev-nice-bg); }
+  .roadmap-head h3 { font-size: 16px; font-weight: 700; color: var(--ink); margin: 0; }
+
+  .rm-item {
+    display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; align-items: start;
+    padding: 16px 0; border-top: 1px solid var(--line);
+  }
+  .roadmap-group .rm-item:first-of-type { border-top: none; padding-top: 0; }
+  .rm-item h4 { grid-column: 1; font-size: 14.5px; font-weight: 700; color: var(--ink); margin: 0 0 5px; }
+  .rm-item p { grid-column: 1; font-size: 13.5px; color: var(--muted-text); margin: 0; max-width: 62ch; }
+  .rm-item code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px;
+    background: var(--line); padding: 1px 5px; border-radius: 4px; color: var(--ink);
+  }
+  .rm-effort {
+    grid-column: 2; grid-row: 1 / span 2; align-self: start; justify-self: end;
+    font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted-text); border: 1px solid var(--line); padding: 3px 9px;
+    border-radius: 999px; white-space: nowrap; margin-top: 2px;
+  }
+  .video-flag {
+    font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--blue); background: color-mix(in srgb, var(--yellow) 35%, transparent);
+    padding: 2px 8px; border-radius: 999px; align-self: flex-start;
+  }
+
   @media (max-width: 640px) {
     .stats { grid-template-columns: repeat(2, 1fr); }
     .xp-item { grid-template-columns: 1fr; gap: 8px; }
+    .rm-item { grid-template-columns: 1fr; }
+    .rm-effort { grid-row: auto; justify-self: start; margin-top: 6px; }
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -169,7 +221,7 @@
     </p>
 
     <div class="stats">
-      <div class="stat"><b>11</b><span>Projects Showcased</span></div>
+      <div class="stat"><b>13</b><span>Projects Showcased</span></div>
       <div class="stat"><b>02+</b><span>Years Experience</span></div>
       <div class="stat"><b>16</b><span>Skills &amp; Tools</span></div>
       <div class="stat"><b>04</b><span>Roles Held</span></div>
@@ -196,8 +248,10 @@
   <div class="wrap sec-head">
     <span class="eyebrow">Selected Work</span>
     <h2>Projects in the showcase</h2>
-    <p>A bento-grid gallery of 11 shipped projects — mobile-first iOS apps, real-time data tools, and web builds.</p>
+    <p>A bento-grid gallery of 13 shipped projects — mobile-first iOS apps, real-time data tools, and web builds. Two now play live demo video instead of a static screenshot.</p>
     <div class="grid">
+      <div class="card"><div class="top"><span class="num">12</span><span class="yr">2026</span></div><h3>PairingMacTab</h3><span class="video-flag">▶ Demo video</span><p>Turns an Android tablet into a wired extended-display for macOS over USB — H.264 screen capture streamed via the Android Open Accessory protocol.</p><div class="chips"><span class="chip">Swift</span><span class="chip">Kotlin</span><span class="chip">ScreenCaptureKit</span><span class="chip">IOKit</span></div></div>
+      <div class="card"><div class="top"><span class="num">13</span><span class="yr">2026</span></div><h3>VibeCode Web Builder</h3><span class="video-flag">▶ Demo video</span><p>Native macOS AI app builder on the Gemini API — chat-driven code generation with a visual project canvas and Keychain-secured API keys.</p><div class="chips"><span class="chip">Swift</span><span class="chip">SwiftUI</span><span class="chip">Gemini API</span></div></div>
       <div class="card"><div class="top"><span class="num">11</span><span class="yr">2025</span></div><h3>To Do List App</h3><p>Task manager in Swift &amp; UIKit with an in-app calendar picker and date-scoped tasks.</p><div class="chips"><span class="chip">Swift</span><span class="chip">UIKit</span><span class="chip">Supabase</span><span class="chip">MVVM</span></div></div>
       <div class="card"><div class="top"><span class="num">10</span><span class="yr">2026</span></div><h3>Kojek App</h3><p>Ride-hailing app with route optimization, dynamic pricing, and driver online/offline status.</p><div class="chips"><span class="chip">SwiftUI</span><span class="chip">Node.js</span><span class="chip">Supabase</span><span class="chip">Role-Based</span></div></div>
       <div class="card"><div class="top"><span class="num">01</span><span class="yr">2025</span></div><h3>KChat App</h3><p>Real-time iOS chat between users, built with SwiftUI and Firebase.</p><div class="chips"><span class="chip">Swift</span><span class="chip">Firebase</span><span class="chip">SwiftUI</span></div></div>
@@ -255,6 +309,133 @@
       <div><b>Framer Motion</b><span>Project drawer, animated logo, and reveal transitions.</span></div>
       <div><b>Tailwind CSS v4</b><span>Brand system in blue #0135AD &amp; yellow #F4E11B.</span></div>
       <div><b>TypeScript</b><span>Typed project data, card sizing, and image orientation.</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap sec-head">
+    <span class="eyebrow">Upgrade Roadmap</span>
+    <h2>What to build next</h2>
+    <p>Triaged from reading the actual source, not a generic feature list — grouped by what breaks trust today, what's genuinely missing, and what's just polish.</p>
+
+    <div class="roadmap-group">
+      <div class="roadmap-head"><span class="sev-pill critical">Fix first</span><h3>Live bugs on the current site</h3></div>
+
+      <div class="rm-item">
+        <div>
+          <h4>9 project cards link to a dead GitHub URL</h4>
+          <p><code>githubUrl</code> in <code>app/data/projects.ts</code> is still <code>github.com/yourusername/…</code> for ToDoList, Tipsy, KChat, Kshop, Portfolio, HackerNews, Weather, Geodashboard, JivaSport and ByteCoin. Every "View on GitHub" click 404s.</p>
+        </div>
+        <span class="rm-effort">Low effort</span>
+      </div>
+      <div class="rm-item">
+        <div>
+          <h4>The hero's main CTA doesn't work</h4>
+          <p><code>WHATSAPP_NUMBER = "YOUR_WHATSAPP_NUMBER"</code> in <code>heroPage.tsx</code> — "Let's get in touch!" is your single most prominent button and it currently opens a broken wa.me link.</p>
+        </div>
+        <span class="rm-effort">Low effort</span>
+      </div>
+      <div class="rm-item">
+        <div>
+          <h4>Page metadata is still the Next.js default</h4>
+          <p><code>layout.tsx</code> ships <code>"Generated by create next app"</code> as the description and has no Open Graph or Twitter card tags — links shared on LinkedIn or WhatsApp show no preview image or real summary.</p>
+        </div>
+        <span class="rm-effort">Low effort</span>
+      </div>
+    </div>
+
+    <div class="roadmap-group">
+      <div class="roadmap-head"><span class="sev-pill add">Worth adding</span><h3>New sections</h3></div>
+
+      <div class="rm-item">
+        <div>
+          <h4>A closing "let's build something" section</h4>
+          <p>Right now the only ask on the whole page is the hero CTA. Scrolling past the tech stack and experience just dead-ends at the footer — add a closing band above it with one big contact action.</p>
+        </div>
+        <span class="rm-effort">Low effort</span>
+      </div>
+      <div class="rm-item">
+        <div>
+          <h4>A live GitHub activity strip</h4>
+          <p>You've got 70+ public and private repos on <code>github.com/KareemHafidzh</code> — a stats-image embed (e.g. github-readme-stats) backs up "years of experience" with something a recruiter can verify at a glance, and it's a single <code>&lt;img&gt;</code> tag, no client JS.</p>
+        </div>
+        <span class="rm-effort">Low effort</span>
+      </div>
+      <div class="rm-item">
+        <div>
+          <h4>Case-study depth for your two most technical builds</h4>
+          <p>Kojek App (dynamic pricing, driver online/offline state) and PairingMacTab (custom binary wire protocol, AOA handshake, hardware H.264 encode) have real engineering stories that a one-line card + drawer undersell. A dedicated problem → architecture → result block for just these two would carry more signal than treating all 13 projects equally.</p>
+        </div>
+        <span class="rm-effort">Medium effort</span>
+      </div>
+      <div class="rm-item">
+        <div>
+          <h4>A short "now" or toolkit block</h4>
+          <p>What you're currently building, your editor/setup — cheap to write, on-brand for the "Vibe Coder" role tag, and gives a repeat visitor something new without touching the project grid.</p>
+        </div>
+        <span class="rm-effort">Low effort</span>
+      </div>
+    </div>
+
+    <div class="roadmap-group">
+      <div class="roadmap-head"><span class="sev-pill add">Worth adding</span><h3>Animation &amp; interaction</h3></div>
+      <p style="margin: -6px 0 16px; font-size: 13px; color: var(--muted-text);">Framer Motion is already a dependency — it's only driving the boot-up logo and one page fade-in today.</p>
+
+      <div class="rm-item">
+        <div>
+          <h4>Scroll-triggered section reveals</h4>
+          <p>The Tech Stack, Projects, and Experience headers just appear on load. Wrap them in <code>motion.div</code> + <code>whileInView</code> — same library already imported in <code>AnimatedLogo</code> — for a staggered fade-up as the user scrolls.</p>
+        </div>
+        <span class="rm-effort">Low effort</span>
+      </div>
+      <div class="rm-item">
+        <div>
+          <h4>Animated stat counters</h4>
+          <p>The hero's "13" and "02+" are static text. A count-up-on-scroll with Framer Motion's <code>useMotionValue</code> makes the hero feel alive with no new dependency.</p>
+        </div>
+        <span class="rm-effort">Low effort</span>
+      </div>
+      <div class="rm-item">
+        <div>
+          <h4>Subtle 3D tilt on project cards</h4>
+          <p>Cards already scale on hover in <code>my-projects.tsx</code>. Layering a mousemove-driven <code>rotateX/rotateY</code> tilt (plain CSS, no library) fits the bento grid's playful energy without adding weight.</p>
+        </div>
+        <span class="rm-effort">Medium effort</span>
+      </div>
+      <div class="rm-item">
+        <div>
+          <h4>Respect <code>prefers-reduced-motion</code></h4>
+          <p>The experience section's floating-card keyframe and the hero's typing loop run unconditionally today. Gate both behind the media query — a two-line CSS addition, and it's an accessibility basic, not a nice-to-have.</p>
+        </div>
+        <span class="rm-effort">Low effort</span>
+      </div>
+    </div>
+
+    <div class="roadmap-group">
+      <div class="roadmap-head"><span class="sev-pill nice">Nice to have</span><h3>Technical polish</h3></div>
+
+      <div class="rm-item">
+        <div>
+          <h4>Pause off-screen demo videos</h4>
+          <p>PairingMacTab and VibeCode Web Builder now autoplay video backgrounds unconditionally in the grid. An <code>IntersectionObserver</code> that only plays the ones currently on-screen saves battery and mobile data as the grid grows.</p>
+        </div>
+        <span class="rm-effort">Medium effort</span>
+      </div>
+      <div class="rm-item">
+        <div>
+          <h4>Add <code>sitemap.ts</code> and <code>robots.ts</code></h4>
+          <p>Next's App Router generates both from a two-line file each. Neither exists yet, so search engines have no crawl map for the site.</p>
+        </div>
+        <span class="rm-effort">Low effort</span>
+      </div>
+      <div class="rm-item">
+        <div>
+          <h4>A real dark mode toggle</h4>
+          <p>The brand pair (<code>#0135AD</code> / <code>#F4E11B</code>) holds up well inverted — right now the site is light-only regardless of the visitor's system theme.</p>
+        </div>
+        <span class="rm-effort">Medium effort</span>
+      </div>
     </div>
   </div>
 </section>

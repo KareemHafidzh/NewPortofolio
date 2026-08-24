@@ -15,7 +15,11 @@ export default function Home() {
   const handleAnimationComplete = useCallback(() => setShowContent(true), []);
 
   return (
-    <div className="relative flex flex-col flex-1">
+    // Same backdrop as <body>, repeated on a real element: body's background
+    // propagates to the page canvas, which mix-blend-mode can't blend against —
+    // without this the hero's Spider-Man layer disappears. Identical origin, so
+    // the dot grid stays in phase.
+    <div className="relative flex flex-col flex-1 bg-white bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:24px_24px]">
 
       <Navbar/>
       <AnimatedLogo onAnimationComplete={handleAnimationComplete} />

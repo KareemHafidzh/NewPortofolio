@@ -1,8 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { PROJECTS } from "../data/projects";
+import {
+  approach,
+  BLOB_LOBES,
+  blobLobes,
+  blobPhases,
+  clampToFigure,
+  constrainLobe,
+  driftTarget,
+  rectDistance,
+  spring,
+} from "./spotlight";
 
 function IconBase({ children }: { children: ReactNode }) {
   return (
@@ -66,6 +77,265 @@ const IMAGE_CONFIG = {
   maxWidth: "700px",
   fadeStart: "65%",
 };
+
+// ─── SPIDER SPOTLIGHT ─────────────────────────────────────────────────────────
+// SpiderManImage.png sits on top of HeroImage.png. A radial-gradient mask follows
+// the pointer: the suit is punched out there, the same hole reveals the photo
+// underneath. Tune these until the two heads line up.
+const SPIDER_CONFIG = {
+  scale: 0.9,          // Spidey is framed tighter than HeroImage — shrink to match
+  offsetX: "0%",
+  offsetY: "1.5%",     // …and nudge down so the heads overlap
+  radiusRatio: 0.22,   // blob radius as a fraction of the image width
+  feather: "55%",      // where each lobe's soft edge starts
+  // Per-lobe spring. Lower stiffness lags further behind the cursor, so giving
+  // each lobe a slightly softer spring than the one before makes the blob string
+  // out behind a fast move and gather itself back up afterwards. Uniform values
+  // here would put every lobe on the same trajectory — a rigid slide again.
+  stiffness: 0.14,
+  stiffnessFalloff: 0.13, // each successive lobe is this much slacker
+  damping: 0.76,          // < 1 keeps a little overshoot, which is the wobble
+  radar: 180,          // px around the image where the cursor takes over the drift
+  ease: 0.08,          // per-frame fraction of the gap closed — lower is lazier
+  driftSpeed: 0.004,   // radians per frame of the idle wander
+};
+
+// ponytail: SpiderManImage.png still carries a white studio backdrop. multiply
+// against the white page turns that white transparent — no cutout needed.
+/**
+ * Both layers are cut from one identical stack of lobe gradients — the photo
+ * shows the blob, the suit shows everything but it.
+ *
+ * The suit gets its hole by compositing an opaque layer over the blob with
+ * `exclude`, i.e. XOR, which against alpha 1 works out to exactly 1 - blob. That
+ * exactness is the point: build the hole out of its own inverted gradients
+ * instead and the two only cancel where the gradients are hard, so every soft
+ * overlap shows up as a grey smudge on the edge. Sharing one stack means the
+ * feather can be as wide as it likes and the lobes as many as they like.
+ */
+function spotlightMask(fadeStart: string, showBlob: boolean) {
+  const lobes = Array.from(
+    { length: BLOB_LOBES },
+    (_, i) =>
+      // Absolute positions, not centre-plus-offset: each lobe trails the centre
+      // on its own spring, so there is no single point they all hang off.
+      `radial-gradient(circle calc(var(--spot-r) * var(--lobe-${i}-r, 0.5)) at ` +
+      `var(--lobe-${i}-x, 50%) var(--lobe-${i}-y, 50%), ` +
+      `#000 0%, #000 ${SPIDER_CONFIG.feather}, transparent 100%)`,
+  );
+
+  const fade = `linear-gradient(to bottom, #000 ${fadeStart}, transparent 100%)`;
+  const opaque = "linear-gradient(#000, #000)";
+
+  // Layers composite bottom-up and the first listed is topmost: the lobes union
+  // into the blob, the opaque layer inverts it for the suit, the fade trims the
+  // result.
+  // ponytail: unprefixed only. Adding -webkit-mask-image alongside mask-image
+  // resets mask-composite and the element stops rendering entirely.
+  const union = lobes.map(() => "add");
+  return showBlob
+    ? {
+        maskImage: [fade, ...lobes].join(", "),
+        maskComposite: ["intersect", ...union].join(", "),
+      }
+    : {
+        maskImage: [fade, opaque, ...lobes].join(", "),
+        maskComposite: ["intersect", "exclude", ...union].join(", "),
+      };
+}
+
+function HeroPortrait({
+  width,
+  height,
+  fadeStart,
+  imgClassName,
+  imgStyle,
+  wrapperClassName = "",
+  wrapperStyle,
+  transform = "",
+}: {
+  width: number;
+  height: number;
+  fadeStart: string;
+  imgClassName: string;
+  imgStyle?: React.CSSProperties;
+  wrapperClassName?: string;
+  wrapperStyle?: React.CSSProperties;
+  transform?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  // One rAF loop drives both behaviours: it always eases the spotlight toward a
+  // target, and the only thing that changes is where that target comes from —
+  // the cursor inside the radar, the idle drift outside it. That's what makes
+  // entering and leaving the radar a glide instead of a jump.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    // Cursor position as a fraction of the box, or null when out of radar range.
+    const cursor = { current: null as { x: number; y: number } | null };
+
+    const onMove = (e: PointerEvent) => {
+      const box = el.getBoundingClientRect();
+      cursor.current =
+        rectDistance(e.clientX, e.clientY, box) <= SPIDER_CONFIG.radar
+          ? { x: (e.clientX - box.left) / box.width, y: (e.clientY - box.top) / box.height }
+          : null;
+    };
+    // A finger has no hover, so hand the spotlight back to the drift on lift-off.
+    const onRelease = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") cursor.current = null;
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerup", onRelease, { passive: true });
+    window.addEventListener("pointercancel", onRelease, { passive: true });
+
+    // Reduced motion keeps the cursor tracking but parks the idle wander.
+    const wander = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // Drawn once per mount, so the blob doesn't start from the same shape on
+    // every visit — and so the three breakpoint copies aren't in lockstep.
+    const phases = blobPhases();
+
+    let raf = 0;
+    let t = 0;
+    let { x, y } = driftTarget(0);
+
+    // Each lobe carries its own position and momentum in px.
+    const trail = Array.from({ length: BLOB_LOBES }, () => ({
+      x: 0,
+      y: 0,
+      vx: 0,
+      vy: 0,
+    }));
+    let settled = false;
+    const box = { width: 0, height: 0 };
+
+    const tick = () => {
+      if (box.width === 0) {
+        raf = requestAnimationFrame(tick);
+        return; // nothing measured yet, nothing meaningful to place
+      }
+
+      if (wander) t += SPIDER_CONFIG.driftSpeed;
+      const target = clampToFigure(cursor.current ?? driftTarget(t));
+      x = approach(x, target.x, SPIDER_CONFIG.ease);
+      y = approach(y, target.y, SPIDER_CONFIG.ease);
+
+      const centreX = x * box.width;
+      const centreY = y * box.height;
+      const radius = box.width * SPIDER_CONFIG.radiusRatio;
+
+      // First real frame: drop every lobe straight onto the centre rather than
+      // letting them spring in from the corner of the box.
+      if (!settled) {
+        trail.forEach((lobe) => {
+          lobe.x = centreX;
+          lobe.y = centreY;
+        });
+        settled = true;
+      }
+
+      blobLobes(t, phases).forEach((shape, i) => {
+        const lobe = trail[i];
+        const stiffness =
+          SPIDER_CONFIG.stiffness * (1 - SPIDER_CONFIG.stiffnessFalloff * i);
+
+        const nextX = spring(
+          lobe.x, lobe.vx, centreX + shape.x * radius, stiffness, SPIDER_CONFIG.damping,
+        );
+        const nextY = spring(
+          lobe.y, lobe.vy, centreY + shape.y * radius, stiffness, SPIDER_CONFIG.damping,
+        );
+        lobe.x = nextX.position;
+        lobe.vx = nextX.velocity;
+        lobe.y = nextY.position;
+        lobe.vy = nextY.velocity;
+
+        // Tether, so a fast throw stretches the blob but never tears it apart.
+        const held = constrainLobe((lobe.x - centreX) / radius, (lobe.y - centreY) / radius);
+        el.style.setProperty(`--lobe-${i}-x`, `${(centreX + held.x * radius).toFixed(2)}px`);
+        el.style.setProperty(`--lobe-${i}-y`, `${(centreY + held.y * radius).toFixed(2)}px`);
+        el.style.setProperty(`--lobe-${i}-r`, shape.r.toFixed(3));
+      });
+
+      raf = requestAnimationFrame(tick);
+    };
+
+    // The radius only changes when the box does — measuring it per frame would
+    // force a layout on every one of them.
+    const sizer = new ResizeObserver(([entry]) => {
+      box.width = entry.contentRect.width;
+      box.height = entry.contentRect.height;
+      el.style.setProperty("--spot-r", `${box.width * SPIDER_CONFIG.radiusRatio}px`);
+    });
+    sizer.observe(el);
+
+    // All three breakpoint copies of this component are mounted at once and two
+    // are display:none, so gate the loop on actually being visible. That also
+    // stops it burning frames once the hero scrolls out of view.
+    const watcher = new IntersectionObserver(([entry]) => {
+      cancelAnimationFrame(raf);
+      if (entry.isIntersecting) raf = requestAnimationFrame(tick);
+    });
+    watcher.observe(el);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      sizer.disconnect();
+      watcher.disconnect();
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onRelease);
+      window.removeEventListener("pointercancel", onRelease);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      // ponytail: no transform on this wrapper — it would open a stacking
+      // context and isolate the suit's multiply blend into a white box.
+      className={`relative ${wrapperClassName}`}
+      // pan-y keeps vertical scrolling alive; a sideways drag reveals instead
+      style={{ touchAction: "pan-y", ...wrapperStyle }}
+    >
+      <Image
+        src="/HeroImage.png"
+        alt="Kareem Hafidzh"
+        width={width}
+        height={height}
+        className={imgClassName}
+        style={{ ...imgStyle, transform: transform || undefined, ...spotlightMask(fadeStart, true) }}
+        priority
+      />
+      {/* ponytail: the blend lives on this div, the mask on the image inside.
+          On one element Chrome drops the layer entirely and Spidey vanishes. */}
+      <div className="absolute inset-0" style={{ mixBlendMode: "multiply" }}>
+        <Image
+          src="/SpiderManImage2.png"
+          alt=""
+          aria-hidden="true"
+          fill
+          sizes="(max-width: 640px) 60vw, (max-width: 1024px) 40vw, 700px"
+          draggable={false}
+          // SpiderManImage.png is a 1:1 pad of a 0.8-ratio photo — cover crops the
+          // transparent side bars back off, landing it on top of HeroImage.
+          className="object-cover object-bottom select-none"
+          style={{
+            // the studio backdrop bottoms out at 252, not 255 — the last 1% is
+            // what multiply would otherwise leave as a grey rectangle
+            filter: "brightness(1.02)",
+            transform: `${transform} translate(${SPIDER_CONFIG.offsetX}, ${SPIDER_CONFIG.offsetY}) scale(${SPIDER_CONFIG.scale})`,
+            ...spotlightMask(fadeStart, false),
+          }}
+          priority
+        />
+      </div>
+    </div>
+  );
+}
 
 // ─── TYPING ANIMATION ─────────────────────────────────────────────────────────
 const NAME = "Kareem Abdul Hafidzh.";
@@ -241,18 +511,12 @@ export default function HeroSection() {
 
         {/* Hero image */}
         <div className="relative w-full flex justify-center items-end mt-2 flex-1">
-          <Image
-            src="/HeroImage.png"
-            alt="Kareem Hafidzh"
+          <HeroPortrait
             width={600}
             height={500}
-            className="w-auto object-contain object-bottom"
-            style={{
-              maxHeight: "42vh",
-              maskImage: "linear-gradient(to bottom, black 55%, transparent 100%)",
-              WebkitMaskImage: "linear-gradient(to bottom, black 55%, transparent 100%)",
-            }}
-            priority
+            fadeStart="55%"
+            imgClassName="w-auto object-contain object-bottom"
+            imgStyle={{ maxHeight: "42vh" }}
           />
         </div>
 
@@ -313,18 +577,13 @@ export default function HeroSection() {
           <div className="relative flex items-end justify-center flex-shrink-0"
             style={{ width: "clamp(220px, 42%, 380px)" }}
           >
-            <Image
-              src="/HeroImage.png"
-              alt="Kareem Hafidzh"
+            <HeroPortrait
               width={700}
               height={600}
-              className="w-full h-auto object-contain object-bottom"
-              style={{
-                maxHeight: "75vh",
-                maskImage: "linear-gradient(to bottom, black 60%, transparent 100%)",
-                WebkitMaskImage: "linear-gradient(to bottom, black 60%, transparent 100%)",
-              }}
-              priority
+              fadeStart="60%"
+              wrapperClassName="w-full"
+              imgClassName="w-full h-auto object-contain object-bottom"
+              imgStyle={{ maxHeight: "75vh" }}
             />
           </div>
         </div>
@@ -362,20 +621,15 @@ export default function HeroSection() {
           </div>
 
           {/* Hero Image */}
-          <Image
-            src="/HeroImage.png"
-            alt="Kareem Hafidzh"
+          <HeroPortrait
             width={1000}
             height={800}
-            className="w-auto h-auto object-contain object-bottom pointer-events-auto"
-            style={{
-              transform: `translate(${IMAGE_CONFIG.horizontalOffset}, ${IMAGE_CONFIG.verticalOffset}) scale(${IMAGE_CONFIG.scale})`,
-              maxWidth: IMAGE_CONFIG.maxWidth,
-              maxHeight: "75vh",
-              maskImage: `linear-gradient(to bottom, black ${IMAGE_CONFIG.fadeStart}, transparent 100%)`,
-              WebkitMaskImage: `linear-gradient(to bottom, black ${IMAGE_CONFIG.fadeStart}, transparent 100%)`,
-            }}
-            priority
+            fadeStart={IMAGE_CONFIG.fadeStart}
+            wrapperClassName="pointer-events-auto"
+            wrapperStyle={{ maxWidth: IMAGE_CONFIG.maxWidth }}
+            transform={`translate(${IMAGE_CONFIG.horizontalOffset}, ${IMAGE_CONFIG.verticalOffset}) scale(${IMAGE_CONFIG.scale})`}
+            imgClassName="w-auto h-auto max-w-full object-contain object-bottom"
+            imgStyle={{ maxHeight: "75vh" }}
           />
 
           {/* Right Arrow */}

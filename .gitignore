@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 readme.txt
+
+# ignore video files
+*.mov
+*.mov

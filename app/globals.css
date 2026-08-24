@@ -22,3 +22,10 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Animatable custom property so the hero spotlight can grow/shrink smoothly */
+@property --spot-r {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
