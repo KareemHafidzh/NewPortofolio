@@ -9,7 +9,7 @@ import {
   useMotionValueEvent,
   type MotionValue,
 } from 'framer-motion';
-import { GAP, clamp01, point, webPath } from './spiral';
+import { DECOR, GAP, clamp01, decorPath, point, webPath } from './spiral';
 
 interface Skill {
   name: string;
@@ -79,12 +79,12 @@ const SpiralItem = ({
         src={skill.logo}
         alt={`${skill.name} logo`}
         style={{ rotate }}
-        className="w-11 h-11 md:w-16 md:h-16 object-contain drop-shadow-sm"
+        className="w-14 h-14 md:w-24 md:h-24 object-contain drop-shadow-sm"
       />
       {/* Only the item that just arrived is named. Scrolling back up makes an
           earlier item the newest again, so its name returns. */}
       <p
-        className={`absolute top-full mt-1.5 whitespace-nowrap text-[11px] md:text-sm font-semibold text-[#0135AD] transition-opacity duration-300 ${
+        className={`absolute top-full mt-2 md:mt-3 whitespace-nowrap text-xs md:text-base font-semibold text-[#0135AD] transition-opacity duration-300 ${
           isNewest ? 'opacity-100' : 'opacity-0'
         }`}
       >
@@ -110,6 +110,7 @@ const Heading = ({ docked = false }: { docked?: boolean }) => (
 const TechStackSection = () => {
   const ref = useRef<HTMLElement>(null);
   const webRef = useRef<SVGPathElement>(null);
+  const decorRefs = useRef<(SVGPathElement | null)[]>([]);
 
   // Own scroll progress instead of useScroll({ target }): framer measures the
   // target's offset once, and the intro animation + late-loading images shift
@@ -127,6 +128,11 @@ const TechStackSection = () => {
     // One attribute write a frame, cheaper than a motion value per segment.
     const spiral = clamp01((progress - HEADING_DOCK) / (1 - HEADING_DOCK));
     webRef.current?.setAttribute('d', webPath(spiral, skillsData.length));
+    // The decorative strokes read the same scroll, so they keep step with the
+    // thread without a clock of their own.
+    for (let i = 0; i < DECOR.length; i++) {
+      decorRefs.current[i]?.setAttribute('d', decorPath(spiral, DECOR[i]));
+    }
   });
 
   // Centred over the whole pane at rest, then slid into its left berth. Both
@@ -159,8 +165,8 @@ const TechStackSection = () => {
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-x-3 gap-y-4 md:gap-x-6 md:gap-y-8 w-full">
             {skillsData.map((skill) => (
               <div key={skill.name} className="flex flex-col items-center text-center p-2 md:p-4">
-                <img src={skill.logo} alt={`${skill.name} logo`} className="w-10 h-10 md:w-16 md:h-16 object-contain mb-1.5 md:mb-3" />
-                <p className="text-[11px] md:text-sm font-semibold text-[#0135AD]">{skill.name}</p>
+                <img src={skill.logo} alt={`${skill.name} logo`} className="w-12 h-12 md:w-20 md:h-20 object-contain mb-1.5 md:mb-3" />
+                <p className="text-xs md:text-base font-semibold text-[#0135AD]">{skill.name}</p>
               </div>
             ))}
           </div>
@@ -196,13 +202,31 @@ const TechStackSection = () => {
               className="absolute inset-0 h-full w-full overflow-visible"
               aria-hidden
             >
+              {/* Drawn first, so the real thread always sits on top of them. */}
+              {DECOR.map((d, i) => (
+                <path
+                  key={i}
+                  ref={(el) => {
+                    decorRefs.current[i] = el;
+                  }}
+                  fill="none"
+                  stroke={i === 0 ? '#0135AD' : '#F4E11B'}
+                  strokeOpacity={i === 0 ? 0.3 : 1}
+                  strokeWidth={i === 0 ? 5 : 4.5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+              ))}
+
               <path
                 ref={webRef}
                 fill="none"
                 stroke="#0135AD"
-                strokeOpacity={0.55}
-                strokeWidth={3.5}
+                strokeOpacity={0.6}
+                strokeWidth={9}
                 strokeLinecap="round"
+                strokeLinejoin="round"
                 vectorEffect="non-scaling-stroke"
               />
             </svg>
