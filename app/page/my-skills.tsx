@@ -73,13 +73,13 @@ const SpiralItem = ({
   return (
     <motion.div
       style={{ left, top, x: '-50%', y: '-50%', scale, opacity, zIndex: index }}
-      className="absolute flex flex-col items-center"
+      className="absolute flex flex-col items-center w-[15%] md:w-[13%]"
     >
       <motion.img
         src={skill.logo}
         alt={`${skill.name} logo`}
         style={{ rotate }}
-        className="w-14 h-14 md:w-24 md:h-24 object-contain drop-shadow-sm"
+        className="w-full aspect-square object-contain drop-shadow-sm"
       />
       {/* Only the item that just arrived is named. Scrolling back up makes an
           earlier item the newest again, so its name returns. */}
