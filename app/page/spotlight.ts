@@ -22,20 +22,14 @@ export function driftTarget(t: number) {
   return { x: 0.5 + 0.16 * Math.sin(t), y: 0.42 + 0.18 * Math.sin(t * 1.3 + 0.7) };
 }
 
-/** Lobe count: one in the middle, the rest on a ring around it. Their union is
- *  the blob. More lobes means a smoother outline and more mask layers to
- *  rasterise every frame. */
-export const BLOB_LOBES = 5;
+/** Lobe count: one big drop in the middle, plus a few satellites tucked inside
+ *  it. Their union is the blob. The satellites barely change the resting outline
+ *  — they exist to lag on their springs and make the drop gloop when it moves. */
+export const BLOB_LOBES = 4;
 
-/**
- * Base angles for the ring lobes, deliberately uneven.
- *
- * Evenly spaced lobes of similar size make a regular polygon, and a soft edge
- * rounds a regular polygon straight back into a disc — which is exactly how an
- * earlier version of this ended up a perfect circle. The irregular spacing is
- * load-bearing, not decoration.
- */
-const BASE_ANGLES = [0, 1.9, 3.35, 4.9];
+/** Base angles for the satellites, spread around the drop so the liquid wobble
+ *  can happen on any side rather than always the same one. */
+const BASE_ANGLES = [0.5, 2.6, 4.6];
 
 /** A phase offset per lobe, drawn once per mount so no two visits start from
  *  the same blob. Takes the generator so the check can pin it down. */
@@ -55,24 +49,22 @@ export function blobPhases(random: () => number = Math.random) {
 export function blobLobes(t: number, phases: number[]) {
   return Array.from({ length: BLOB_LOBES }, (_, i) => {
     if (i === 0) {
-      return { x: 0, y: 0, r: 0.44 + 0.04 * Math.sin(t * 1.7 + phases[0]) };
+      return { x: 0, y: 0, r: 0.55 + 0.015 * Math.sin(t * 1.7 + phases[0]) };
     }
     const ring = i - 1;
 
-    // Every ring lobe must ALWAYS poke out past the centre: the closest a lobe
-    // can sit plus its smallest radius still clears the centre's largest radius.
-    // Let a lobe get swallowed and the union collapses to the centre circle on
-    // its own, which is a literal perfect circle — the exact bug this shape had.
-    // The check pins this down; don't widen these ranges without rerunning it.
-    const angle = BASE_ANGLES[ring] + 0.55 * Math.sin(t * (0.8 + 0.17 * ring) + phases[i]);
-    const distance = 0.39 + 0.13 * Math.sin(t * (1.1 + 0.31 * ring) + phases[i] * 1.7);
+    // Satellites sit deep inside the centre and are fully swallowed at rest, so
+    // the outline is a clean single circle whenever the drop is still. What makes
+    // it liquid is motion: when the drop travels, each satellite lags behind on
+    // its own spring, pokes out past the centre's rim on the trailing side, and
+    // drags the circle into a soft gloop — then melts back in once it settles.
+    const angle = BASE_ANGLES[ring] + 0.10 * Math.sin(t * (0.8 + 0.17 * ring) + phases[i]);
+    const distance = 0.10 + 0.02 * Math.sin(t * (1.1 + 0.31 * ring) + phases[i] * 1.7);
 
     return {
       x: distance * Math.cos(angle),
       y: distance * Math.sin(angle),
-      // Per-lobe frequencies, so the four bumps don't swell in unison and
-      // average back out into something round.
-      r: 0.38 + 0.06 * Math.sin(t * (1.9 + 0.27 * ring) + phases[i] * 2.3),
+      r: 0.38 + 0.02 * Math.sin(t * (1.9 + 0.27 * ring) + phases[i] * 2.3),
     };
   });
 }
@@ -154,7 +146,7 @@ export function spring(
  * blob tears into separate islands mid-flick. This is the guarantee that the
  * geometry invariants survive the fluid motion, not just the resting shape.
  */
-export const MAX_LOBE_REACH = 0.55;
+export const MAX_LOBE_REACH = 0.44;
 
 /** Pull a lobe offset back onto the tether, preserving its direction. */
 export function constrainLobe(dx: number, dy: number) {

@@ -10,10 +10,14 @@ import {
   blobPhases,
   clampToFigure,
   constrainLobe,
-  driftTarget,
   rectDistance,
   spring,
 } from "./spotlight";
+
+// Where the blob rests when the cursor isn't near. It used to wander a slow
+// Lissajous over the figure; now it holds this fixed spot (the centre of that
+// old path) and only moves to follow the pointer inside the radar.
+const IDLE_TARGET = { x: 0.5, y: 0.42 };
 
 function IconBase({ children }: { children: ReactNode }) {
   return (
@@ -87,7 +91,9 @@ const SPIDER_CONFIG = {
   offsetX: "0%",
   offsetY: "1.5%",     // …and nudge down so the heads overlap
   radiusRatio: 0.22,   // blob radius as a fraction of the image width
-  feather: "55%",      // where each lobe's soft edge starts
+  feather: "40%",      // where each lobe's soft edge starts — lower = a wider,
+                       // softer gradient, so the blob reads as one smooth pool
+                       // of light instead of a hard-rimmed shape
   // Per-lobe spring. Lower stiffness lags further behind the cursor, so giving
   // each lobe a slightly softer spring than the one before makes the blob string
   // out behind a fast move and gather itself back up afterwards. Uniform values
@@ -97,7 +103,9 @@ const SPIDER_CONFIG = {
   damping: 0.76,          // < 1 keeps a little overshoot, which is the wobble
   radar: 180,          // px around the image where the cursor takes over the drift
   ease: 0.08,          // per-frame fraction of the gap closed — lower is lazier
-  driftSpeed: 0.004,   // radians per frame of the idle wander
+  fade: 0.14,          // how fast the blob grows in on hover
+  fadeOut: 0.045,      // …and the gentler rate it melts away on leave — lower is smoother
+  driftSpeed: 0.004,   // radians per frame of the idle breathing
 };
 
 // ponytail: SpiderManImage.png still carries a white studio backdrop. multiply
@@ -119,7 +127,7 @@ function spotlightMask(fadeStart: string, showBlob: boolean) {
     (_, i) =>
       // Absolute positions, not centre-plus-offset: each lobe trails the centre
       // on its own spring, so there is no single point they all hang off.
-      `radial-gradient(circle calc(var(--spot-r) * var(--lobe-${i}-r, 0.5)) at ` +
+      `radial-gradient(circle calc(var(--spot-r, 0.5px) * var(--lobe-${i}-r, 0.5)) at ` +
       `var(--lobe-${i}-x, 50%) var(--lobe-${i}-y, 50%), ` +
       `#000 0%, #000 ${SPIDER_CONFIG.feather}, transparent 100%)`,
   );
@@ -201,7 +209,7 @@ function HeroPortrait({
 
     let raf = 0;
     let t = 0;
-    let { x, y } = driftTarget(0);
+    let { x, y } = IDLE_TARGET;
 
     // Each lobe carries its own position and momentum in px.
     const trail = Array.from({ length: BLOB_LOBES }, () => ({
@@ -211,6 +219,9 @@ function HeroPortrait({
       vy: 0,
     }));
     let settled = false;
+    // 0 = no blob at all (photo shown whole), 1 = full spotlight. Starts at 0 so
+    // nothing is punched out until the cursor arrives.
+    let strength = 0;
     const box = { width: 0, height: 0 };
 
     const tick = () => {
@@ -220,13 +231,34 @@ function HeroPortrait({
       }
 
       if (wander) t += SPIDER_CONFIG.driftSpeed;
-      const target = clampToFigure(cursor.current ?? driftTarget(t));
+      const target = clampToFigure(cursor.current ?? IDLE_TARGET);
+
+      // When the blob is essentially gone, snap its centre to where the cursor
+      // just appeared, so it grows in under the pointer rather than sliding
+      // across from the idle spot.
+      if (strength < 0.01 && cursor.current) {
+        x = target.x;
+        y = target.y;
+      }
+
       x = approach(x, target.x, SPIDER_CONFIG.ease);
       y = approach(y, target.y, SPIDER_CONFIG.ease);
 
+      // The blob only exists while the cursor is near. Easing the radius through
+      // `strength` grows it out of nothing on hover and shrinks it back to
+      // nothing on leave, so there's no blob resting on the figure when idle.
+      // A slower rate on the way out makes leaving melt away rather than snap.
+      const fadeSpeed = cursor.current ? SPIDER_CONFIG.fade : SPIDER_CONFIG.fadeOut;
+      strength = approach(strength, cursor.current ? 1 : 0, fadeSpeed);
+
       const centreX = x * box.width;
       const centreY = y * box.height;
-      const radius = box.width * SPIDER_CONFIG.radiusRatio;
+      const radius = box.width * SPIDER_CONFIG.radiusRatio * strength;
+      // Fade Spidey in/out with the blob so he's fully gone when idle, and keep
+      // --spot-r just above zero so the mask gradient never degenerates (a
+      // zero-radius circle invalidates the whole mask and flashes both images).
+      el.style.setProperty("--blob-opacity", strength.toFixed(3));
+      el.style.setProperty("--spot-r", `${Math.max(radius, 0.5).toFixed(2)}px`);
 
       // First real frame: drop every lobe straight onto the centre rather than
       // letting them spring in from the corner of the box.
@@ -269,7 +301,8 @@ function HeroPortrait({
     const sizer = new ResizeObserver(([entry]) => {
       box.width = entry.contentRect.width;
       box.height = entry.contentRect.height;
-      el.style.setProperty("--spot-r", `${box.width * SPIDER_CONFIG.radiusRatio}px`);
+      // --spot-r is set per frame from `strength`, so the blob can grow/shrink;
+      // measuring here just keeps the box dimensions current.
     });
     sizer.observe(el);
 
@@ -307,12 +340,15 @@ function HeroPortrait({
         width={width}
         height={height}
         className={imgClassName}
-        style={{ ...imgStyle, transform: transform || undefined, ...spotlightMask(fadeStart, true) }}
+        style={{ ...imgStyle, transform: transform || undefined, ...spotlightMask(fadeStart, false) }}
         priority
       />
       {/* ponytail: the blend lives on this div, the mask on the image inside.
-          On one element Chrome drops the layer entirely and Spidey vanishes. */}
-      <div className="absolute inset-0" style={{ mixBlendMode: "multiply" }}>
+          On one element Chrome drops the layer entirely and Spidey vanishes.
+          Opacity is driven by the blob's strength (0 when idle) so Spidey is
+          genuinely hidden until the cursor summons the blob — this is what
+          stops both images flashing together before the loop's first frame. */}
+      <div className="absolute inset-0" style={{ mixBlendMode: "multiply", opacity: "var(--blob-opacity, 0)" }}>
         <Image
           src="/SpiderManImage2.png"
           alt=""
@@ -328,7 +364,7 @@ function HeroPortrait({
             // what multiply would otherwise leave as a grey rectangle
             filter: "brightness(1.02)",
             transform: `${transform} translate(${SPIDER_CONFIG.offsetX}, ${SPIDER_CONFIG.offsetY}) scale(${SPIDER_CONFIG.scale})`,
-            ...spotlightMask(fadeStart, false),
+            ...spotlightMask(fadeStart, true),
           }}
           priority
         />

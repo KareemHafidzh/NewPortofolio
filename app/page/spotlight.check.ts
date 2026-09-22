@@ -15,35 +15,38 @@ import {
   spring,
 } from "./spotlight.ts";
 
-// ── the blob is not a circle ────────────────────────────────────────────────
-// The one that actually matters. Two earlier versions of this shape passed
-// every other assertion here while rendering as a perfect disc, because nothing
-// measured roundness — connectivity and non-repetition are both perfectly happy
-// with a circle. Eccentricity is max/min outline radius over a full turn, so
-// 1.0 is a circle and this fails the moment the lobes average back out.
+// ── the blob rests as a single round drop ───────────────────────────────────
+// The design goal flipped: the blob is now meant to read as ONE circle at rest,
+// and get its liquid character from motion (the throw test below), not from a
+// lumpy outline. So this measures the opposite of what it used to — the resting
+// shape must stay close to a circle. Eccentricity is max/min outline radius over
+// a full turn, 1.0 being a perfect circle; here we cap how far it may stray so a
+// future tweak can't turn the drop back into a spiky lump.
 {
-  let worst = Infinity;
+  let worst = 0;
   let total = 0;
   let samples = 0;
   for (let seed = 0; seed < 8; seed++) {
     const phases = blobPhases(() => (seed * 0.618033 + 0.137) % 1);
     for (let t = 0; t < 60; t += 0.25) {
       const e = eccentricity(blobLobes(t, phases));
-      worst = Math.min(worst, e);
+      worst = Math.max(worst, e);
       total += e;
       samples++;
     }
   }
-  assert.ok(worst >= 1.25, `blob went round: eccentricity dropped to ${worst.toFixed(3)}`);
+  assert.ok(worst <= 1.05, `resting drop got too lumpy: eccentricity rose to ${worst.toFixed(3)}`);
   assert.ok(
-    total / samples >= 1.7,
-    `blob is too round on average: ${(total / samples).toFixed(3)}`,
+    total / samples <= 1.02,
+    `resting drop isn't round enough on average: ${(total / samples).toFixed(3)}`,
   );
 }
 
-// ── the blob is always one soft blob, never islands or a plain circle ────────
-// Swept over phases as well as time, because the phases are random per mount:
-// a shape that only holds together for the phases I happened to see is no good.
+// ── the drop is one solid mass, and its satellites stay tucked inside at rest ─
+// Swept over phases as well as time, because the phases are random per mount.
+// The design goal flipped: at rest the satellites must be FULLY SWALLOWED by the
+// centre, so the resting outline is a clean circle. They only emerge when the
+// spring lag pulls them out mid-motion, which the throw test exercises.
 for (let seed = 0; seed < 12; seed++) {
   const phases = blobPhases(() => (seed * 0.618033 + 0.137) % 1);
   for (let t = 0; t < 120; t += 0.05) {
@@ -64,22 +67,12 @@ for (let seed = 0; seed < 12; seed++) {
       if (i === 0) return;
       const gap = Math.hypot(lobe.x, lobe.y);
 
-      // Overlaps the centre with room to spare. Merely touching would leave a
-      // visible pinch where the two circles meet; this demands they properly
-      // merge, which is what reads as one organic shape instead of a bunch of
-      // circles.
+      // Sits fully inside the centre at rest: its farthest reach never crosses
+      // the centre's rim, so the still drop is a plain circle. The liquid only
+      // appears once a satellite lags out past this in motion.
       assert.ok(
-        gap < 0.85 * (lobe.r + centre.r),
-        `lobe ${i} only grazes the centre at t=${t}: ${gap} vs ${lobe.r + centre.r}`,
-      );
-
-      // …but never so deep that the centre swallows it. A swallowed lobe stops
-      // contributing to the outline, and if they all tuck in at once the union
-      // is just the centre circle. This is the direct cause of the perfect
-      // circle that shipped twice.
-      assert.ok(
-        gap + lobe.r > centre.r,
-        `lobe ${i} was swallowed by the centre at t=${t}: reaches ${gap + lobe.r} vs ${centre.r}`,
+        gap + lobe.r <= centre.r,
+        `satellite ${i} pokes out at rest at t=${t}: reaches ${gap + lobe.r} vs ${centre.r}`,
       );
     });
   }
